@@ -850,7 +850,7 @@
     const offset = Math.floor(Math.random() * 950);
 
     // Search with random seed, get batch, filter by popularity
-    const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(seed)}&type=track&limit=50&offset=${offset}`;
+    const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(seed)}&type=track&limit=50`;
     const r = await fetch(url, { headers: { Authorization: 'Bearer ' + tk } });
     if (!r.ok) throw new Error('Search failed: ' + r.status);
     const d = await r.json();
