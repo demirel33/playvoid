@@ -791,19 +791,27 @@
   async function getToken() {
     if (token && Date.now() < tokenExpiry) return token;
     try {
+      const creds = CLIENT_ID + ':' + CLIENT_SECRET;
+      const encoded = btoa(unescape(encodeURIComponent(creds)));
       const r = await fetch('https://accounts.spotify.com/api/token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': 'Basic ' + btoa(CLIENT_ID + ':' + CLIENT_SECRET)
+          'Authorization': 'Basic ' + encoded
         },
         body: 'grant_type=client_credentials'
       });
+      if (!r.ok) {
+        const err = await r.text();
+        throw new Error('Token error: ' + r.status + ' ' + err);
+      }
       const d = await r.json();
+      if (!d.access_token) throw new Error('No access_token in response');
       token = d.access_token;
       tokenExpiry = Date.now() + (d.expires_in - 60) * 1000;
       return token;
     } catch(e) {
+      console.error('getToken failed:', e);
       return null;
     }
   }
@@ -845,12 +853,14 @@
     const pop = getPopularityTarget();
     const seed = randomSeed();
 
-    const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(seed)}&type=track&limit=50`;
+    const markets = ['US','GB','DE','FR','AU','CA','BR','JP','SE','NL','ES','IT','PL','MX','AR'];
+    const market = markets[Math.floor(Math.random() * markets.length)];
+    const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(seed)}&type=track&limit=50&market=${market}`;
     const r = await fetch(url, { headers: { Authorization: 'Bearer ' + tk } });
 
     if (!r.ok) {
       const errText = await r.text().catch(() => '');
-      throw new Error('Search failed: ' + r.status);
+      throw new Error('Search failed: ' + r.status + ' ' + errText.slice(0,80));
     }
 
     const d = await r.json();
