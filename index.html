@@ -855,7 +855,7 @@
 
     const markets = ['US','GB','DE','FR','AU','CA','BR','JP','SE','NL','ES','IT','PL','MX','AR'];
     const market = markets[Math.floor(Math.random() * markets.length)];
-    const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(seed)}&type=track&limit=50&market=${market}`;
+    const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(seed)}&type=track&limit=20&market=${market}`;
     const r = await fetch(url, { headers: { Authorization: 'Bearer ' + tk } });
 
     if (!r.ok) {
