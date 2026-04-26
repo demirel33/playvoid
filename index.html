@@ -826,14 +826,11 @@
 
   // ── SEARCH QUERIES ──
   const searchSeeds = [
-    'a','e','i','o','u','the','love','night','dream','blue','red','fire',
-    'rain','sun','moon','star','life','time','world','heart','mind','soul',
-    'dark','light','black','white','cold','hot','new','old','free','lost',
-    'road','home','far','deep','wild','feel','run','fly','stay','go',
-    'la','de','el','von','le','di','du','na','wa','yo','ne','si',
-    'baby','yeah','oh','hey','music','song','sound','beat','wave',
-    'spring','winter','summer','fall','river','ocean','mountain','city',
-    'broken','alive','rise','fall','silent','loud','soft','hard',
+    'love','night','dream','fire','rain','moon','star','life','time','soul',
+    'dark','light','cold','free','lost','road','home','deep','wild','feel',
+    'la','le','di','na','si','yo','ne','wa','da','mi',
+    'song','beat','wave','city','rise','blue','red','run','fly','stay',
+    'broken','alive','silent','soft','hard','far','old','new','sky','sea',
   ];
 
   function randomSeed() {
@@ -843,34 +840,34 @@
   // ── FETCH TRACK ──
   async function fetchRandomTrack() {
     const tk = await getToken();
-    if (!tk) throw new Error('Auth failed');
+    if (!tk) throw new Error('Auth failed — check API keys');
 
     const pop = getPopularityTarget();
     const seed = randomSeed();
-    const offset = Math.floor(Math.random() * 950);
 
-    // Search with random seed, get batch, filter by popularity
     const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(seed)}&type=track&limit=50`;
     const r = await fetch(url, { headers: { Authorization: 'Bearer ' + tk } });
-    if (!r.ok) throw new Error('Search failed: ' + r.status);
-    const d = await r.json();
 
+    if (!r.ok) {
+      const errText = await r.text().catch(() => '');
+      throw new Error('Search failed: ' + r.status);
+    }
+
+    const d = await r.json();
     const items = d.tracks?.items || [];
-    // Filter: must have preview_url + match popularity range
+
     let candidates = items.filter(t =>
       t.preview_url &&
       t.popularity >= pop.min &&
       t.popularity <= pop.max
     );
 
-    // If nothing in range, relax and just require preview
     if (candidates.length === 0) {
       candidates = items.filter(t => t.preview_url);
     }
 
-    if (candidates.length === 0) throw new Error('No preview available');
+    if (candidates.length === 0) throw new Error('No preview available — try again');
 
-    // Pick random from candidates
     const track = candidates[Math.floor(Math.random() * candidates.length)];
     return { track, popLabel: pop.label };
   }
