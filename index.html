@@ -866,16 +866,7 @@
     const d = await r.json();
     const items = d.tracks?.items || [];
 
-    let candidates = items.filter(t =>
-      t.preview_url &&
-      t.popularity >= pop.min &&
-      t.popularity <= pop.max
-    );
-
-    if (candidates.length === 0) {
-      candidates = items.filter(t => t.preview_url);
-    }
-
+    let candidates = items.filter(t => t.preview_url);
     if (candidates.length === 0) throw new Error('No preview available — try again');
 
     const track = candidates[Math.floor(Math.random() * candidates.length)];
