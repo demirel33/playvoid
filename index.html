@@ -387,20 +387,21 @@
     .btn-like:active, .btn-next:active, .btn-spotify:active { transform: scale(0.93); }
 
     .btn-like {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--border);
-      font-size: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.2s ease, transform 0.15s ease;
-    }
-    .btn-like:hover { background: rgba(255,80,80,0.15); }
-    .btn-like.liked { background: rgba(255,80,80,0.2); border-color: rgba(255,80,80,0.3); }
+      .btn-play-pause {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.btn-play-pause:hover { opacity: 0.85; }
+.btn-play-pause:active { transform: scale(0.93); }
 
     .btn-next {
       flex: 1;
@@ -1000,6 +1001,17 @@
   document.getElementById('btn-start').addEventListener('click', discover);
   document.getElementById('btn-retry').addEventListener('click', discover);
   document.getElementById('btn-next').addEventListener('click', discover);
+    document.getElementById('btn-play-pause').addEventListener('click', () => {
+  if (audio.paused) {
+    audio.play();
+    document.getElementById('eq-indicator').classList.add('playing');
+    document.getElementById('btn-play-pause').innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+  } else {
+    audio.pause();
+    document.getElementById('eq-indicator').classList.remove('playing');
+    document.getElementById('btn-play-pause').innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  }
+});
   document.getElementById('btn-discover-again').addEventListener('click', discover);
   document.getElementById('btn-like').addEventListener('click', toggleLike);
   document.getElementById('fab-liked').addEventListener('click', openLiked);
