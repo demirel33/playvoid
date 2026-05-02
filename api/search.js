@@ -2,14 +2,24 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
   
-  const { term, country } = req.query;
+  const { term, country, mode } = req.query;
   
   if (!term) {
     return res.status(400).json({ error: 'term required' });
   }
 
   try {
-    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=50&explicit=Yes&country=${country || 'us'}`;
+    let url;
+    
+    if (mode === 'party') {
+      // Party mode: filter by energetic genres only
+      // genreId: 7=Electronic, 18=Hip-Hop/Rap, 17=Dance, 15=R&B/Soul
+      const partyGenres = ['7', '18', '17', '15'];
+      const randomGenre = partyGenres[Math.floor(Math.random() * partyGenres.length)];
+      url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=50&explicit=Yes&country=${country || 'us'}&genreId=${randomGenre}`;
+    } else {
+      url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=50&explicit=Yes&country=${country || 'us'}`;
+    }
     
     const response = await fetch(url, {
       headers: {
