@@ -1,40 +1,51 @@
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
-  
-  const { term, country, mode } = req.query;
-  
+export const config = {
+  runtime: 'edge',
+};
+
+export default async function handler(req) {
+  const { searchParams } = new URL(req.url);
+  const term = searchParams.get('term');
+  const country = searchParams.get('country') || 'us';
+  const mode = searchParams.get('mode') || 'random';
+
   if (!term) {
-    return res.status(400).json({ error: 'term required' });
+    return new Response(JSON.stringify({ error: 'term required' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+    });
   }
 
   try {
     let url;
-    
     if (mode === 'party') {
-      // Party mode: filter by energetic genres only
-      // genreId: 7=Electronic, 18=Hip-Hop/Rap, 17=Dance, 15=R&B/Soul
       const partyGenres = ['7', '18', '17', '15'];
       const randomGenre = partyGenres[Math.floor(Math.random() * partyGenres.length)];
-      url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=50&explicit=Yes&country=${country || 'us'}&genreId=${randomGenre}`;
+      url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=50&explicit=Yes&country=${country}&genreId=${randomGenre}`;
     } else {
-      url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=50&explicit=Yes&country=${country || 'us'}`;
+      url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=50&explicit=Yes&country=${country}`;
     }
-    
+
     const response = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
+      cf: { cacheEverything: true, cacheTtl: 300 }
+    });
+
+    if (!response.ok) throw new Error('iTunes error: ' + response.status);
+
+    const data = await response.json();
+
+    return new Response(JSON.stringify(data), {
+      status: 200,
       headers: {
-        'User-Agent': 'Mozilla/5.0',
-        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
       }
     });
-    
-    if (!response.ok) {
-      throw new Error('iTunes API error: ' + response.status);
-    }
-    
-    const data = await response.json();
-    res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+    });
   }
 }
