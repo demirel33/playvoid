@@ -696,7 +696,7 @@
     }
     .card-enter { animation: cardIn 0.45s cubic-bezier(0.34, 1.2, 0.64, 1) forwards; }
 
-    /* ── MOBILE ── */
+    /* ── MOBILE OPTIMIZATIONS ── */
     @media (max-width: 480px) {
       header { padding: 18px 20px; }
       .logo { font-size: 19px; }
@@ -706,6 +706,18 @@
       .progress-wrap { padding: 16px 18px 0; }
       .player-actions { padding: 16px 18px 20px; gap: 10px; }
       .idle-stats { gap: 24px; }
+      
+      /* GPU'yu rahatlatmak için mobilde ağır bulanıklığı kapat */
+      .blob { display: none !important; }
+      
+      /* Kullanıcıyı bekletmemek için animasyon gecikmelerini sıfırla */
+      .idle-eyebrow, .idle-title, .idle-sub, .btn-discover, .idle-stats {
+        animation-delay: 0s !important;
+        animation-duration: 0.4s !important;
+      }
+      
+      /* Düzen kaymasını (CLS) engellemek için buton alanını sabitle */
+      .btn-discover { min-height: 64px; }
     }
   </style>
 <!-- GEÇİCİ OLARAK KAPATILDI
